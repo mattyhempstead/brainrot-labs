@@ -53,17 +53,17 @@ export const brainrotRouter = createTRPCRouter({
         credentials: env.FAL_API_KEY,
       });
 
-      // const { request_id } = await fal.queue.submit(VIDEO_MODEL, {
-      //   input: params,
-      //   webhookUrl: `${env.DEPLOYMENT_URL}${PATH_BRAINROT_JOB_STATUS}`,
-      // });
-      const { request_id } = await fal.queue.submit("fal-ai/playai/tts/v3", {
-        input: {
-          input: input.prompt,
-          voice: "Jennifer (English (US)/American)",
-        },
+      const { request_id } = await fal.queue.submit(VIDEO_MODEL, {
+        input: params,
         webhookUrl: `${env.DEPLOYMENT_URL}${PATH_BRAINROT_JOB_STATUS}`,
       });
+      // const { request_id } = await fal.queue.submit("fal-ai/playai/tts/v3", {
+      //   input: {
+      //     input: input.prompt,
+      //     voice: "Jennifer (English (US)/American)",
+      //   },
+      //   webhookUrl: `${env.DEPLOYMENT_URL}${PATH_BRAINROT_JOB_STATUS}`,
+      // });
 
       const [ newJob ] = await db.insert(brainrotJobTable).values({
         falRequestId: request_id,
@@ -124,18 +124,18 @@ export const brainrotRouter = createTRPCRouter({
           credentials: env.FAL_API_KEY,
         });
 
-        const result = await fal.queue.result("fal-ai/playai/tts/v3", {
-          requestId: input.falRequestId
-        });
+        // const result = await fal.queue.result("fal-ai/playai/tts/v3", {
+        //   requestId: input.falRequestId
+        // });
         // const videoUrl = result.data.audio.url;
 
-        // const result = await fal.queue.result(VIDEO_MODEL, {
-        //   requestId: "4e5f9c66-084c-4d41-afb7-3aa558b743f1"
-        // });
-        // const videoUrl = result.data.video.url;
-        // console.log(videoUrl);
+        const result = await fal.queue.result(VIDEO_MODEL, {
+          requestId: input.falRequestId
+        });
+        const videoUrl = result.data.video.url;
+        console.log(videoUrl);
 
-        const videoUrl = "https://fal.media/files/monkey/iazc7FsWpz_WGGIFdMTQB_output.mp4";
+        // const videoUrl = "https://fal.media/files/monkey/iazc7FsWpz_WGGIFdMTQB_output.mp4";
 
         await db
           .update(brainrotJobTable)
