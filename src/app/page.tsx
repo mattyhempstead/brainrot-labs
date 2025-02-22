@@ -7,11 +7,9 @@ import { useState, useEffect } from "react"
 
 // Move placeholders outside component
 const placeholders = [
-  "Tell me about your favorite movie...",
-  "Share a funny story that happened today...",
-  "What's your hot take on social media?",
-  "Write a creative caption for your next post...",
-  "Share your thoughts on the latest trends..."
+  "Cristiano Ronaldo and Speed eat a cake",
+  "Taylor Swift and Sabrina hug and then fight each other",
+  "Young-hee climbs up a tree and falls down",
 ];
 
 export default function Page() {
