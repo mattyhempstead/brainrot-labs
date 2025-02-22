@@ -1,16 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { ArrowUp, ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import ImageSelector from "../../_components/ImageSelector";
-import Image from "next/image";
 import {
   Select,
   SelectContent,
@@ -18,8 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowUp, ImageIcon, X } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import ImageSelector from "../../_components/ImageSelector";
 import { useChat } from "./chatStore";
-import { api } from "@/trpc/react";
 import { RightColumnSection } from "./RightColumnSection";
 
 interface ChatMessage {
@@ -115,10 +114,6 @@ const mockAssistantResponses = [
 
 export default function ChatPage() {
   const { messages, message, setMessage, addMessage } = useChat();
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
 
@@ -197,7 +192,7 @@ export default function ChatPage() {
   }, []); // Empty dependency array since we only want this to run once on mount
 
   // Updated handleSubmit function
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, inputValue: string, selectedImages: string[]) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
@@ -209,8 +204,6 @@ export default function ChatPage() {
     };
     
     addMessage(userMessage);
-    setInputValue("");
-    setSelectedImages([]);
     setIsLoading(true);
 
     try {
@@ -319,88 +312,7 @@ export default function ChatPage() {
           </div>
         </div>
 
-        {/* Input area - fixed at bottom */}
-        <div className="border-border bg-background p-4">
-          <form onSubmit={handleSubmit} className="duration-125 group flex max-w-full flex-col gap-2 border-2 border-border bg-[var(--bw)] p-2 transition-colors">
-            {selectedImages.length > 0 && (
-              <div className="flex flex-wrap gap-2 p-0">
-                <div className="bg-muted flex items-center gap-0 rounded-md p-2">
-                  <div className="relative h-8 w-8">
-                    <Image
-                      src={selectedImages[0] || ""}
-                      alt="Selected image"
-                      fill
-                      className="border border-black object-cover"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedImages([])}
-                    className="hover:bg-muted-foreground/20 ml-2 rounded-full"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            )}
-            <Textarea
-              className="ring-offset-background placeholder:text-muted-foreground flex w-full resize-none rounded-md border-0 bg-transparent px-2 py-2 text-[16px] leading-snug focus:bg-transparent focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
-              rows={3}
-              placeholder="Type your message..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  void handleSubmit(e);
-                }
-              }}
-            />
-            <div className="flex flex-wrap justify-between gap-1">
-              <div className="flex flex-wrap gap-2">
-                <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="reverse"
-                      size="icon"
-                      className="bg-[var(--bw)]"
-                    >
-                      <ImageIcon className="h-6 w-6" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="w-fit bg-[var(--bw)]"
-                    align="start"
-                    side="top"
-                  >
-                    <ImageSelector
-                      uploadedImages={uploadedImages}
-                      setUploadedImages={setUploadedImages}
-                      selectedImages={selectedImages}
-                      setSelectedImages={setSelectedImages}
-                      onImageSelect={() => setIsPopoverOpen(false)}
-                      defaultImages={images}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <Select>
-                  <SelectTrigger className="w-[150px] bg-bw">
-                    <SelectValue placeholder="Content Style" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-bw" side="top">
-                    <SelectItem value="messy">💥 Messy</SelectItem>
-                    <SelectItem value="explosive">💣 Explosive</SelectItem>
-                    <SelectItem value="watery">💦 Watery</SelectItem>
-                    <SelectItem value="shiny">✨ Shiny</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button variant="reverse" size="icon">
-                <ArrowUp className="h-6 w-6" />
-              </Button>
-            </div>
-          </form>
-        </div>
+        <ChatInputArea onSubmit={handleSubmit} />
       </div>
 
       {/* Right Column */}
@@ -408,3 +320,104 @@ export default function ChatPage() {
     </div>
   );
 }
+
+const ChatInputArea = ({
+  onSubmit
+}: {
+  onSubmit: (e: React.FormEvent, inputValue: string, selectedImages: string[]) => void;
+}) => {
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    onSubmit(e, inputValue, selectedImages);
+    setInputValue("");
+    setSelectedImages([]);
+  };
+
+  return (
+    <div className="border-border bg-background p-4">
+      <form onSubmit={handleSubmit} className="duration-125 group flex max-w-full flex-col gap-2 border-2 border-border bg-[var(--bw)] p-2 transition-colors">
+        {selectedImages.length > 0 && (
+          <div className="flex flex-wrap gap-2 p-0">
+            <div className="bg-muted flex items-center gap-0 rounded-md p-2">
+              <div className="relative h-8 w-8">
+                <Image
+                  src={selectedImages[0] || ""}
+                  alt="Selected image"
+                  fill
+                  className="border border-black object-cover"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedImages([])}
+                className="hover:bg-muted-foreground/20 ml-2 rounded-full"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
+        <Textarea
+          className="ring-offset-background placeholder:text-muted-foreground flex w-full resize-none rounded-md border-0 bg-transparent px-2 py-2 text-[16px] leading-snug focus:bg-transparent focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+          rows={3}
+          placeholder="Type your message..."
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              void handleSubmit(e);
+            }
+          }}
+        />
+        <div className="flex flex-wrap justify-between gap-1">
+          <div className="flex flex-wrap gap-2">
+            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="reverse"
+                  size="icon"
+                  className="bg-[var(--bw)]"
+                >
+                  <ImageIcon className="h-6 w-6" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-fit bg-[var(--bw)]"
+                align="start"
+                side="top"
+              >
+                <ImageSelector
+                  uploadedImages={uploadedImages}
+                  setUploadedImages={setUploadedImages}
+                  selectedImages={selectedImages}
+                  setSelectedImages={setSelectedImages}
+                  onImageSelect={() => setIsPopoverOpen(false)}
+                  defaultImages={images}
+                />
+              </PopoverContent>
+            </Popover>
+            <Select>
+              <SelectTrigger className="w-[150px] bg-bw">
+                <SelectValue placeholder="Content Style" />
+              </SelectTrigger>
+              <SelectContent className="bg-bw" side="top">
+                <SelectItem value="messy">💥 Messy</SelectItem>
+                <SelectItem value="explosive">💣 Explosive</SelectItem>
+                <SelectItem value="watery">💦 Watery</SelectItem>
+                <SelectItem value="shiny">✨ Shiny</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button variant="reverse" size="icon">
+            <ArrowUp className="h-6 w-6" />
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+};
