@@ -1,30 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { ArrowUp, ImageIcon, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import ImageSelector from "../../_components/ImageSelector";
-import Image from "next/image";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useChat } from "./chatStore";
 import { api } from "@/trpc/react";
-
+import { Loader2 } from "lucide-react";
 
 export function RightColumnSection() {
     // Fetching video logic moved here
-    const { data: jobs } = api.brainrot.listJobs.useQuery();
+    const { data: jobs } = api.brainrot.listJobs.useQuery(undefined, {
+      refetchInterval: 10000 // Refetch every 10 seconds
+    });
   
     return (
       <div className="flex h-full w-1/2 flex-col">
@@ -38,7 +21,11 @@ export function RightColumnSection() {
           <div className="grid grid-cols-4 gap-4">
             {jobs?.map((job) => (
               <div key={job.id} className="relative">
-                {job.videoUrl && (
+                {job.status === "in_progress" ? (
+                  <div className="relative aspect-[9/16] w-full bg-muted flex items-center justify-center rounded-lg">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                  </div>
+                ) : job.videoUrl && (
                   <div className="relative aspect-[9/16] w-full">
                     <video
                       src={job.videoUrl}
@@ -54,4 +41,3 @@ export function RightColumnSection() {
       </div>
     );
   }
-  
