@@ -8,33 +8,29 @@ interface ImageSelectorProps {
   selectedImages: string[];
   setSelectedImages: (images: string[]) => void;
   onImageSelect: () => void;
+  defaultImages: string[];
 }
-
-const images = [
-  "/images/1.jpg",
-  "/images/2.jpg",
-  "/images/3.jpg",
-];
 
 export default function ImageSelector({ 
   uploadedImages, 
   setUploadedImages, 
   selectedImages, 
   setSelectedImages,
-  onImageSelect
+  onImageSelect,
+  defaultImages
 }: ImageSelectorProps) {
   const handleImageClick = (image: string) => {
     if (selectedImages.includes(image)) {
-      setSelectedImages(selectedImages.filter(img => img !== image));
+      setSelectedImages([]);
     } else {
-      setSelectedImages([...selectedImages, image]);
+      setSelectedImages([image]);
     }
     onImageSelect();
   };
 
   return (
     <div className="flex gap-2 p-0">
-      {[...images, ...uploadedImages].map((image, index) => (
+      {[...defaultImages, ...uploadedImages].map((image, index) => (
         <button
           key={index}
           onClick={() => handleImageClick(image)}
@@ -64,7 +60,7 @@ export default function ImageSelector({
             const file = e.target.files?.[0];
             if (file) {
               const imageUrl = URL.createObjectURL(file);
-              setSelectedImages([...selectedImages, imageUrl]);
+              setSelectedImages([imageUrl]);
               onImageSelect();
             }
           }}

@@ -11,8 +11,21 @@ import {
 } from "@/components/ui/popover";
 import ImageSelector from "./_components/ImageSelector";
 import Image from "next/image";
+import Marquee from "@/components/ui/marquee";
 
 const placeholders = [
+  "Cristiano Ronaldo and Speed eat a cake",
+  "Taylor Swift and Sabrina hug and then fight each other",
+  "Young-hee climbs up a tree and falls down",
+];
+
+const images = [
+  "/images/1.jpg",
+  "/images/2.jpg",
+  "/images/3.jpg",
+];
+
+const marqueeItems = [
   "Cristiano Ronaldo and Speed eat a cake",
   "Taylor Swift and Sabrina hug and then fight each other",
   "Young-hee climbs up a tree and falls down",
@@ -81,28 +94,23 @@ export default function Page() {
         <form className="duration-125 group flex flex-col gap-2 border-2 border-border bg-[var(--bw)] p-2 transition-colors">
           {selectedImages.length > 0 && (
             <div className="flex flex-wrap gap-2 p-0">
-              {selectedImages.map((image, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-0 rounded-md bg-muted p-2"
-                >
-                  <div className="relative h-8 w-8">
-                    <Image
-                      src={image}
-                      alt={`Selected image ${index + 1}`}
-                      fill
-                      className="object-cover border border-black"
-                    />
-                  </div>
-                  <button 
-                    type="button"
-                    onClick={() => setSelectedImages(selectedImages.filter((_, i) => i !== index))}
-                    className="ml-2 rounded-full hover:bg-muted-foreground/20"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
+              <div className="bg-muted flex items-center gap-0 rounded-md p-2">
+                <div className="relative h-8 w-8">
+                  <Image
+                    src={selectedImages[0] || ""}
+                    alt="Selected image"
+                    fill
+                    className="border border-black object-cover"
+                  />
                 </div>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => setSelectedImages([])}
+                  className="hover:bg-muted-foreground/20 ml-2 rounded-full"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           )}
           <Textarea
@@ -122,16 +130,17 @@ export default function Page() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent
-                className="bg-[var(--bw)] w-fit"
+                className="w-fit bg-[var(--bw)]"
                 align="start"
                 side="top"
               >
-                <ImageSelector 
+                <ImageSelector
                   uploadedImages={uploadedImages}
                   setUploadedImages={setUploadedImages}
                   selectedImages={selectedImages}
                   setSelectedImages={setSelectedImages}
                   onImageSelect={() => setIsPopoverOpen(false)}
+                  defaultImages={images}
                 />
               </PopoverContent>
             </Popover>
@@ -140,6 +149,8 @@ export default function Page() {
             </Button>
           </div>
         </form>
+
+        <Marquee items={marqueeItems} />
       </div>
     </div>
   );
