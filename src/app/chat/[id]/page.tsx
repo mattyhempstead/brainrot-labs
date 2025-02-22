@@ -19,6 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useChat } from "./chatStore";
+import { api } from "@/trpc/react";
+import { RightColumnSection } from "./RightColumnSection";
 
 interface ChatMessage {
   id: string;
@@ -113,7 +115,6 @@ const mockAssistantResponses = [
 
 export default function ChatPage() {
   const { messages, message, setMessage, addMessage } = useChat();
-  const [videos, setVideos] = useState<VideoCard[]>(mockVideos);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -124,10 +125,12 @@ export default function ChatPage() {
   // Add a ref to track initial mount
   const isInitialMount = useRef(true);
 
-  // Add this useEffect to handle initial API call
   useEffect(() => {
     const handleInitialMessage = async () => {
-      // Only proceed if we have messages and the last message is from the user
+      // Only run on initial mount and reset the flag
+      if (!isInitialMount.current) return;
+      isInitialMount.current = false;
+
       const lastMessage = messages.at(-1);
       if (messages.length > 0 && lastMessage?.sender === 'user') {
         setIsLoading(true);
@@ -211,15 +214,8 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      
-      
-
       const messageContent = selectedImages.length > 0 ? [
         { type: 'text', text: inputValue + (selectedImages[0] ? "\n\nimageUrl:" + selectedImages[0] : "") },
-        // {
-        //   type: 'image',
-        //   image: selectedImages[0], // This should be a path relative to the public directory
-        // }
       ] : inputValue;
 
       const response = await fetch('/api/brainrot/chat', {
@@ -227,6 +223,7 @@ export default function ChatPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: [...messages, { role: 'user', content: messageContent }],
+          systemMessage: "You are an AI assistant that helps users come up with viral content prompts and generate videos. After generating a video, always provide a message back to the user confirming the video has started generating",
         })
       });
 
@@ -407,35 +404,7 @@ export default function ChatPage() {
       </div>
 
       {/* Right Column */}
-      <div className="flex h-full w-1/2 flex-col">
-        {/* Content Studio header */}
-        <div className="border-border p-4">
-          <h2 className="text-2xl font-semibold">Content Studio</h2>
-        </div>
-        
-        {/* Videos container - scrollable area */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <div className="grid grid-cols-4 gap-4">
-            {videos.map((video) => (
-              <div key={video.id} className="relative">
-                <div className="relative aspect-[9/16] w-full">
-                  <Image
-                    src={video.thumbnail}
-                    alt={video.title}
-                    fill
-                    className="rounded-lg object-cover"
-                  />
-                  <div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded text-xs text-white">
-                    {video.duration}
-                  </div>
-                </div>
-                <h3 className="mt-2 font-medium">{video.title}</h3>
-                <p className="text-sm text-muted-foreground">{video.views} views</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <RightColumnSection />
     </div>
   );
 }
