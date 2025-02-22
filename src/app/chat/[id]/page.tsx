@@ -203,6 +203,8 @@ export default function ChatPage() {
       images: selectedImages.length > 0 ? selectedImages : undefined
     };
     
+    // Create the messages array with the new message before making the API call
+    const updatedMessages = [...messages, userMessage];
     addMessage(userMessage);
     setIsLoading(true);
 
@@ -211,11 +213,19 @@ export default function ChatPage() {
         { type: 'text', text: inputValue + (selectedImages[0] ? "\n\nimageUrl:" + selectedImages[0] : "") },
       ] : inputValue;
 
+      // Convert chat messages to the format expected by the API
+      const apiMessages = updatedMessages.map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.sender === 'user' && msg.images?.length 
+          ? { type: 'text', text: msg.content + (msg.images[0] ? "\n\nimageUrl:" + msg.images[0] : "") }
+          : msg.content
+      }));
+
       const response = await fetch('/api/brainrot/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [...messages, { role: 'user', content: messageContent }],
+          messages: apiMessages,
           systemMessage: "You are an AI assistant that helps users come up with viral content prompts and generate videos. After generating a video, always provide a message back to the user confirming the video has started generating",
         })
       });
