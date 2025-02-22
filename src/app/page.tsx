@@ -12,6 +12,15 @@ import {
 import ImageSelector from "./_components/ImageSelector";
 import Image from "next/image";
 import Marquee from "@/components/ui/marquee";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const placeholders = [
   "Ronaldo and Speed eat a cake",
@@ -19,11 +28,7 @@ const placeholders = [
   "Taylor and Sabrina hug and then fight each other",
 ];
 
-const images = [
-  "/images/1.jpg",
-  "/images/2.jpg",
-  "/images/3.jpg",
-];
+const images = ["/images/1.jpg", "/images/2.jpg", "/images/3.jpg"];
 
 const marqueeItems = [
   "Ronaldo and Speed eat a cake",
@@ -41,7 +46,7 @@ export default function Page() {
   const [inputValue, setInputValue] = useState("");
 
   const handleMarqueeClick = (text: string, index: number) => {
-    console.log('Setting input to:', text);
+    console.log("Setting input to:", text);
     setInputValue(text);
     if (images[index]) {
       setSelectedImages([images[index]]);
@@ -130,39 +135,52 @@ export default function Page() {
             onChange={(e) => setInputValue(e.target.value)}
           />
           <div className="flex flex-wrap justify-between gap-1">
-            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="reverse"
-                  size="icon"
-                  className="bg-[var(--bw)]"
+            <div className="flex flex-wrap gap-2">
+              <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="reverse"
+                    size="icon"
+                    className="bg-[var(--bw)]"
+                  >
+                    <ImageIcon className="h-6 w-6" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-fit bg-[var(--bw)]"
+                  align="start"
+                  side="top"
                 >
-                  <ImageIcon className="h-6 w-6" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                className="w-fit bg-[var(--bw)]"
-                align="start"
-                side="top"
-              >
-                <ImageSelector
-                  uploadedImages={uploadedImages}
-                  setUploadedImages={setUploadedImages}
-                  selectedImages={selectedImages}
-                  setSelectedImages={setSelectedImages}
-                  onImageSelect={() => setIsPopoverOpen(false)}
-                  defaultImages={images}
-                />
-              </PopoverContent>
-            </Popover>
+                  <ImageSelector
+                    uploadedImages={uploadedImages}
+                    setUploadedImages={setUploadedImages}
+                    selectedImages={selectedImages}
+                    setSelectedImages={setSelectedImages}
+                    onImageSelect={() => setIsPopoverOpen(false)}
+                    defaultImages={images}
+                  />
+                </PopoverContent>
+              </Popover>
+              <Select>
+                <SelectTrigger className="w-[150px] bg-bw">
+                  <SelectValue placeholder="Content Style" />
+                </SelectTrigger>
+                <SelectContent className="bg-bw" side="top">
+                  <SelectItem value="messy">💥 Messy</SelectItem>
+                  <SelectItem value="explosive">💣 Explosive</SelectItem>
+                  <SelectItem value="watery">💦 Watery</SelectItem>
+                  <SelectItem value="shiny">✨ Shiny</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <Button variant="reverse" size="icon">
               <ArrowUp className="h-6 w-6" />
             </Button>
           </div>
         </form>
 
-        <Marquee 
-          items={marqueeItems} 
+        <Marquee
+          items={marqueeItems}
           onItemClick={handleMarqueeClick}
           inputValue={inputValue}
           setInputValue={setInputValue}
