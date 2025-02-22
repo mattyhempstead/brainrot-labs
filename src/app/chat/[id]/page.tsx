@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowUp, ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useChat } from "./chatStore";
 
 interface ChatMessage {
   id: string;
@@ -104,13 +105,50 @@ const mockVideos: VideoCard[] = [
   },
 ];
 
+const mockAssistantResponses = [
+  "Of course! What kind of content are you looking to create?",
+  "That sounds interesting! Would you like to see some examples of similar content?",
+  "I can help with that! Here are some trending effects that might work well:",
+];
+
 export default function ChatPage() {
-  const [messages, setMessages] = useState<ChatMessage[]>(mockMessages);
+  const { messages, message, setMessage, addMessage } = useChat();
   const [videos, setVideos] = useState<VideoCard[]>(mockVideos);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
+
+  // Simulate assistant response
+  const sendAssistantResponse = () => {
+    const randomResponse = mockAssistantResponses[Math.floor(Math.random() * mockAssistantResponses.length)] || "How can I help you?";
+    const assistantMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      content: randomResponse,
+      sender: 'assistant' as const
+    };
+    addMessage(assistantMessage);
+  };
+
+  // Handle message submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputValue.trim()) return;
+
+    const userMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      content: inputValue,
+      sender: 'user' as const,
+      images: selectedImages.length > 0 ? selectedImages : undefined
+    };
+    
+    addMessage(userMessage);
+    setInputValue("");
+    setSelectedImages([]);
+    
+    // Simulate assistant response after a short delay
+    setTimeout(sendAssistantResponse, 1000);
+  };
 
   return (
     <div className="flex h-screen">
@@ -118,7 +156,7 @@ export default function ChatPage() {
       <div className="flex h-full w-1/2 flex-col border-r-2 border-border">
         {/* Messages container - scrollable area */}
         <div className="flex-1 overflow-y-auto">
-          <div className="flex min-h-full flex-col justify-end">
+          <div className="flex min-h-full flex-col justify-start">
             <div className="flex flex-col gap-4 p-4">
               {messages.map((message) => (
                 <div
@@ -154,7 +192,7 @@ export default function ChatPage() {
 
         {/* Input area - fixed at bottom */}
         <div className="border-border bg-background p-4">
-          <form className="duration-125 group flex max-w-full flex-col gap-2 border-2 border-border bg-[var(--bw)] p-2 transition-colors">
+          <form onSubmit={handleSubmit} className="duration-125 group flex max-w-full flex-col gap-2 border-2 border-border bg-[var(--bw)] p-2 transition-colors">
             {selectedImages.length > 0 && (
               <div className="flex flex-wrap gap-2 p-0">
                 <div className="bg-muted flex items-center gap-0 rounded-md p-2">
