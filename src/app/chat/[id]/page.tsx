@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ArrowUp, ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -119,6 +119,9 @@ export default function ChatPage() {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
 
+  // Add a ref to track initial mount
+  const isInitialMount = useRef(true);
+
   // Simulate assistant response
   const sendAssistantResponse = () => {
     const randomResponse = mockAssistantResponses[Math.floor(Math.random() * mockAssistantResponses.length)] || "How can I help you?";
@@ -145,10 +148,20 @@ export default function ChatPage() {
     addMessage(userMessage);
     setInputValue("");
     setSelectedImages([]);
-    
-    // Simulate assistant response after a short delay
-    setTimeout(sendAssistantResponse, 1000);
   };
+
+  // Single handler for assistant responses
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage?.sender === 'user') {
+      setTimeout(sendAssistantResponse, 1000);
+    }
+  }, [messages]);
 
   return (
     <div className="flex h-screen">
@@ -172,7 +185,7 @@ export default function ChatPage() {
                   >
                     {message.sender === 'user' && message.images && message.images.length > 0 && (
                       <div className="mb-2">
-                        <div className="relative h-40 w-40">
+                        <div className="relative h-20 w-20">
                           <Image
                             src={message.images[0] || ""}
                             alt="Message image"
