@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
 const placeholders = [
   "Ronaldo and Speed eat a cake",
@@ -37,6 +38,7 @@ const marqueeItems = [
 ];
 
 export default function Page() {
+  const router = useRouter();
   const [currentPlaceholder, setCurrentPlaceholder] = useState("");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -44,6 +46,12 @@ export default function Page() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const uuid = crypto.randomUUID();
+    router.push(`/chat/${uuid}`);
+  };
 
   const handleMarqueeClick = (text: string, index: number) => {
     console.log("Setting input to:", text);
@@ -105,7 +113,7 @@ export default function Page() {
       </p>
 
       <div className="w-full max-w-3xl">
-        <form className="duration-125 group flex flex-col gap-2 border-2 border-border bg-[var(--bw)] p-2 transition-colors">
+        <form onSubmit={handleSubmit} className="duration-125 group flex flex-col gap-2 border-2 border-border bg-[var(--bw)] p-2 transition-colors">
           {selectedImages.length > 0 && (
             <div className="flex flex-wrap gap-2 p-0">
               <div className="bg-muted flex items-center gap-0 rounded-md p-2">
@@ -173,7 +181,7 @@ export default function Page() {
                 </SelectContent>
               </Select>
             </div>
-            <Button variant="reverse" size="icon">
+            <Button type="submit" variant="reverse" size="icon">
               <ArrowUp className="h-6 w-6" />
             </Button>
           </div>
