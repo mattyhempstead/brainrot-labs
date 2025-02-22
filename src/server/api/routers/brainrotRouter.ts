@@ -121,13 +121,15 @@ export const brainrotRouter = createTRPCRouter({
         const result = await fal.queue.result("fal-ai/playai/tts/v3", {
           requestId: input.falRequestId
         });
-        const videoUrl = result.data.audio.url;
+        // const videoUrl = result.data.audio.url;
 
         // const result = await fal.queue.result(VIDEO_MODEL, {
         //   requestId: "4e5f9c66-084c-4d41-afb7-3aa558b743f1"
         // });
         // const videoUrl = result.data.video.url;
         // console.log(videoUrl);
+
+        const videoUrl = "https://fal.media/files/monkey/iazc7FsWpz_WGGIFdMTQB_output.mp4";
 
         await db
           .update(brainrotJobTable)
