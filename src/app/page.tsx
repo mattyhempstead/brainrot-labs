@@ -22,6 +22,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
+import { useChat } from "@/app/chat/[id]/chatStore";
+
+interface ChatMessage {
+  id: string;
+  content: string;
+  sender: 'user' | 'assistant';
+  images?: string[];
+}
 
 const placeholders = [
   "Ronaldo and Speed eat a cake",
@@ -37,8 +45,9 @@ const marqueeItems = [
   "Taylor and Sabrina hug and then fight each other",
 ];
 
-export default function Page() {
+export default function HomePage() {
   const router = useRouter();
+  const chatStore = useChat();
   const [currentPlaceholder, setCurrentPlaceholder] = useState("");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -49,7 +58,17 @@ export default function Page() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!inputValue.trim()) return;
+    
     const uuid = crypto.randomUUID();
+    const message: ChatMessage = {
+      id: crypto.randomUUID(),
+      content: inputValue,
+      sender: 'user',
+      images: selectedImages.length > 0 ? selectedImages : undefined
+    };
+    
+    chatStore.addMessage(message);
     router.push(`/chat/${uuid}`);
   };
 

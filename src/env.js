@@ -36,7 +36,7 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     FAL_API_KEY: process.env.FAL_API_KEY,
     // DEPLOYMENT_URL: process.env.DEPLOYMENT_URL || process.env.VERCEL_URL || "http://localhost:3000",
-    DEPLOYMENT_URL: "http://localhost:3000",
+    DEPLOYMENT_URL: process.env.DEPLOYMENT_URL || process.env.VERCEL_URL,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
