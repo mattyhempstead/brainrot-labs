@@ -1,10 +1,15 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { ArrowUp, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useEffect } from "react";
-
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import ImageSelector from "./_components/ImageSelector";
 
 const placeholders = [
   "Cristiano Ronaldo and Speed eat a cake",
@@ -76,9 +81,24 @@ export default function Page() {
             placeholder={currentPlaceholder}
           />
           <div className="flex flex-wrap justify-between gap-1">
-            <Button variant="reverse" size="icon" className="bg-[var(--bw)]">
-              <ImageIcon className="h-6 w-6" />
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="reverse"
+                  size="icon"
+                  className="bg-[var(--bw)]"
+                >
+                  <ImageIcon className="h-6 w-6" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="bg-[var(--bw)]"
+                align="start"
+                side="top"
+              >
+                <ImageSelector />
+              </PopoverContent>
+            </Popover>
             <Button variant="reverse" size="icon">
               <ArrowUp className="h-6 w-6" />
             </Button>
