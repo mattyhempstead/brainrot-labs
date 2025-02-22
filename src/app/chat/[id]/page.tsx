@@ -20,6 +20,7 @@ import { useEffect, useRef, useState } from "react";
 import ImageSelector from "../../_components/ImageSelector";
 import { useChat } from "./chatStore";
 import { RightColumnSection } from "./RightColumnSection";
+import ReactMarkdown from 'react-markdown';
 
 interface ChatMessage {
   id: string;
@@ -277,7 +278,11 @@ export default function ChatPage() {
                           </div>
                         </div>
                       )}
-                      <p>{message.content}</p>
+                      {message.sender === 'assistant' ? (
+                        <ReactMarkdown>{message.content}</ReactMarkdown>
+                      ) : (
+                        <p>{message.content}</p>
+                      )}
                     </div>
                   </div>
                 ))
@@ -285,7 +290,7 @@ export default function ChatPage() {
               {streamingContent && (
                 <div className="flex justify-start">
                   <div className="bg-muted max-w-full p-3">
-                    <p>{streamingContent}</p>
+                    <ReactMarkdown>{streamingContent}</ReactMarkdown>
                   </div>
                 </div>
               )}
