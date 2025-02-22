@@ -40,9 +40,9 @@ const placeholders = [
 const images = ["/images/ronaldo.jpg", "/images/squidgame.jpg", "/images/taylor.jpg"];
 
 const marqueeItems = [
-  "Ronaldo and Speed eat a cake",
-  "Young-hee climbs up a tree and falls down",
-  "Taylor and Sabrina hug and then fight each other",
+  "A cake appears and the two people eat it",
+  "The girl climbs up a tree and falls down",
+  "The two women hug and then start boxing each other",
 ];
 
 export default function HomePage() {
