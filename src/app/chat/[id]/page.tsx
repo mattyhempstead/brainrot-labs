@@ -233,6 +233,12 @@ export default function ChatPage() {
               placeholder="Type your message..."
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+              }}
             />
             <div className="flex flex-wrap justify-between gap-1">
               <div className="flex flex-wrap gap-2">
