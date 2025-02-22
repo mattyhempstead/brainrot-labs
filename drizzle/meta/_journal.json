@@ -8,6 +8,13 @@
       "when": 1740192431722,
       "tag": "0000_opposite_satana",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1740209501218,
+      "tag": "0001_curvy_karnak",
+      "breakpoints": true
     }
   ]
 }

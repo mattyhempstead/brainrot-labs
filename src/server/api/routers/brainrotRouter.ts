@@ -61,7 +61,8 @@ export const brainrotRouter = createTRPCRouter({
 
       const [ newJob ] = await db.insert(brainrotJobTable).values({
         falRequestId: request_id,
-        status: "in_progress"
+        status: "in_progress",
+        videoUrl: null,
       }).returning();
 
       if (!newJob) {
@@ -110,6 +111,31 @@ export const brainrotRouter = createTRPCRouter({
 
       if (!updatedJob) {
         throw new Error("Job not found");
+      }
+
+      if (input.status === "completed") {
+        fal.config({
+          credentials: env.FAL_API_KEY,
+        });
+
+        const result = await fal.queue.result("fal-ai/playai/tts/v3", {
+          requestId: input.falRequestId
+        });
+        const videoUrl = result.data.audio.url;
+
+        // const result = await fal.queue.result(VIDEO_MODEL, {
+        //   requestId: "4e5f9c66-084c-4d41-afb7-3aa558b743f1"
+        // });
+        // const videoUrl = result.data.video.url;
+        // console.log(videoUrl);
+
+        await db
+          .update(brainrotJobTable)
+          .set({ videoUrl: videoUrl })
+          .where(eq(brainrotJobTable.falRequestId, input.falRequestId));
+
+        console.log("Job result data:", result.data);
+        console.log("Job requestId:", result.requestId);
       }
 
       return updatedJob;
