@@ -14,9 +14,9 @@ import Image from "next/image";
 import Marquee from "@/components/ui/marquee";
 
 const placeholders = [
-  "Cristiano Ronaldo and Speed eat a cake",
+  "Ronaldo and Speed eat a cake",
   "Young-hee climbs up a tree and falls down",
-  "Taylor Swift and Sabrina hug and then fight each other",
+  "Taylor and Sabrina hug and then fight each other",
 ];
 
 const images = [
@@ -26,9 +26,9 @@ const images = [
 ];
 
 const marqueeItems = [
-  "Cristiano Ronaldo and Speed eat a cake",
+  "Ronaldo and Speed eat a cake",
   "Young-hee climbs up a tree and falls down",
-  "Taylor Swift and Sabrina hug and then fight each other",
+  "Taylor and Sabrina hug and then fight each other",
 ];
 
 export default function Page() {
