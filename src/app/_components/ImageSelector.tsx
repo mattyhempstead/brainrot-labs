@@ -49,7 +49,7 @@ export default function ImageSelector({
         </button>
       ))}
       
-      <label
+      {/* <label
         className="relative h-[160px] w-[90px] flex items-center justify-center rounded-md border border-border hover:border-foreground/50 transition-colors cursor-pointer"
       >
         <input 
@@ -66,7 +66,7 @@ export default function ImageSelector({
           }}
         />
         <Plus className="h-6 w-6" />
-      </label>
+      </label> */}
     </div>
   );
 }

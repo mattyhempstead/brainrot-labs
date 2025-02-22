@@ -115,7 +115,7 @@ export default function ChatPage() {
   return (
     <div className="flex h-screen">
       {/* Left Column */}
-      <div className="flex h-full w-1/2 flex-col border-r border-border">
+      <div className="flex h-full w-1/2 flex-col border-r-2 border-border">
         {/* Messages container - scrollable area */}
         <div className="flex-1 overflow-y-auto">
           <div className="flex min-h-full flex-col justify-end">
