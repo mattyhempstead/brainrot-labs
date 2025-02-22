@@ -119,8 +119,8 @@ export default function HomePage() {
 
   return (
     <div className="max-w-10xl mx-auto flex min-h-screen flex-col items-center justify-center space-y-6 p-6">
-      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--main)] shadow-[var(--shadow)]">
-        {/* You can add an icon here if needed */}
+      <div className="flex h-30 w-20 items-center justify-center rounded-full">
+        <Image src="/brain.png" alt="Brain icon" width={98} height={98} />
       </div>
 
       <h1 className="text-foreground text-4xl font-[var(--heading-font-weight)]">
