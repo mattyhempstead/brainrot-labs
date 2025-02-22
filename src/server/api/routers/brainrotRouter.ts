@@ -1,7 +1,10 @@
+import { env } from "@/env";
+import { PATH_BRAINROT_JOB_STATUS } from "@/lib/paths";
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { db } from "@/server/db";
 import { brainrotJobTable } from "@/server/db/schema";
 import { fal } from "@fal-ai/client";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 type MinimaxVideo01ImageToVideoInput = {
@@ -19,6 +22,8 @@ type MinimaxVideo01ImageToVideoInput = {
     prompt_optimizer?: boolean;
 };
 
+const VIDEO_MODEL = "fal-ai/minimax/video-01/image-to-video";
+
 export const brainrotRouter = createTRPCRouter({
   generateVideo: publicProcedure
     .input(z.object({
@@ -32,9 +37,26 @@ export const brainrotRouter = createTRPCRouter({
         prompt_optimizer: true,
       };
 
-      const { request_id } = await fal.queue.submit("fal-ai/minimax/video-01/image-to-video", {
-        input: params,
-        webhookUrl: "https://optional.webhook.url/for/results",
+      console.log(params);
+
+      console.log({
+        webhookUrl: `${env.DEPLOYMENT_URL}${PATH_BRAINROT_JOB_STATUS}`,
+      })
+
+      fal.config({
+        credentials: env.FAL_API_KEY,
+      });
+
+      // const { request_id } = await fal.queue.submit(VIDEO_MODEL, {
+      //   input: params,
+      //   webhookUrl: `${env.DEPLOYMENT_URL}${PATH_BRAINROT_JOB_STATUS}`,
+      // });
+      const { request_id } = await fal.queue.submit("fal-ai/playai/tts/v3", {
+        input: {
+          input: input.prompt,
+          voice: "Jennifer (English (US)/American)",
+        },
+        webhookUrl: `${env.DEPLOYMENT_URL}${PATH_BRAINROT_JOB_STATUS}`,
       });
 
       const [ newJob ] = await db.insert(brainrotJobTable).values({
@@ -48,9 +70,48 @@ export const brainrotRouter = createTRPCRouter({
 
       return { jobId: newJob.id };
     }),
-});
 
-// const status = await fal.queue.status("fal-ai/flux/dev", {
-//   requestId: "764cabcf-b745-4b3e-ae38-1200304cf45b",
-//   logs: true,
-// });
+  getJobStatus: publicProcedure
+    .input(z.object({
+      jobId: z.string().uuid()
+    }))
+    .mutation(async ({ input }) => {
+      const job = await db.query.brainrotJobTable.findFirst({
+        where: eq(brainrotJobTable.id, input.jobId)
+      });
+
+      if (!job) {
+        throw new Error("Job not found");
+      }
+
+      fal.config({
+        credentials: env.FAL_API_KEY,
+      });
+
+      const status = await fal.queue.status(VIDEO_MODEL, {
+        requestId: job.falRequestId,
+        logs: true,
+      });
+
+      return status;
+    }),
+
+  webhookJobStatus: publicProcedure
+    .input(z.object({
+      falRequestId: z.string(),
+      status: z.enum(["completed", "failed"])
+    }))
+    .mutation(async ({ input }) => {
+      const [updatedJob] = await db
+        .update(brainrotJobTable)
+        .set({ status: input.status })
+        .where(eq(brainrotJobTable.falRequestId, input.falRequestId))
+        .returning();
+
+      if (!updatedJob) {
+        throw new Error("Job not found");
+      }
+
+      return updatedJob;
+    }),
+});
