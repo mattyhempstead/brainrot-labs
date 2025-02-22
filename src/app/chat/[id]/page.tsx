@@ -124,6 +124,75 @@ export default function ChatPage() {
   // Add a ref to track initial mount
   const isInitialMount = useRef(true);
 
+  // Add this useEffect to handle initial API call
+  useEffect(() => {
+    const handleInitialMessage = async () => {
+      // Only proceed if we have messages and the last message is from the user
+      const lastMessage = messages.at(-1);
+      if (messages.length > 0 && lastMessage?.sender === 'user') {
+        setIsLoading(true);
+        try {
+          const messageContent = lastMessage.images?.length ? [
+            { 
+              type: 'text', 
+              text: lastMessage.content + (lastMessage.images[0] ? "\n\nimageUrl:" + lastMessage.images[0] : "") 
+            }
+          ] : lastMessage.content;
+
+          const response = await fetch('/api/brainrot/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              messages: [...messages.slice(0, -1), { role: 'user', content: messageContent }],
+            })
+          });
+
+          if (!response.ok) throw new Error('Failed to fetch response');
+
+          const reader = response.body?.getReader();
+          const decoder = new TextDecoder();
+          let streamContent = "";
+
+          if (reader) {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+
+              const chunk = decoder.decode(value);
+              const lines = chunk.split("\n").filter(line => line.trim());
+              
+              for (const line of lines) {
+                if (line.startsWith("0:")) {
+                  const content = line.slice(2).trim();
+                  try {
+                    streamContent += JSON.parse(content);
+                  } catch {
+                    streamContent += content;
+                  }
+                  setStreamingContent(streamContent);
+                }
+              }
+            }
+
+            const assistantMessage: ChatMessage = {
+              id: crypto.randomUUID(),
+              content: streamContent,
+              sender: 'assistant' as const
+            };
+            addMessage(assistantMessage);
+            setStreamingContent("");
+          }
+        } catch (error) {
+          console.error('Error:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void handleInitialMessage();
+  }, []); // Empty dependency array since we only want this to run once on mount
+
   // Updated handleSubmit function
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -194,7 +263,7 @@ export default function ChatPage() {
         const assistantMessage: ChatMessage = {
           id: crypto.randomUUID(),
           content: streamContent,
-          sender: 'assistant'
+          sender: 'assistant' as const
         };
         addMessage(assistantMessage);
         setStreamingContent("");
