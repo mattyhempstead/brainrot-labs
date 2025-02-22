@@ -2,6 +2,7 @@
 
 import { api } from "@/trpc/react";
 import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function RightColumnSection() {
     // Fetching video logic moved here
@@ -26,12 +27,19 @@ export function RightColumnSection() {
                     <Loader2 className="h-8 w-8 animate-spin" />
                   </div>
                 ) : job.videoUrl && (
-                  <div className="relative aspect-[9/16] w-full">
-                    <video
-                      src={job.videoUrl}
-                      className="rounded-lg object-cover w-full h-full"
-                      controls
-                    />
+                  <div className="flex flex-col gap-2">
+                    <div className="relative aspect-[9/16] w-full">
+                      <video
+                        src={job.videoUrl}
+                        className="rounded-lg object-cover w-full h-full"
+                        controls
+                      />
+                    </div>
+                    <Button asChild size="sm" className="w-full">
+                      <a href={job.videoUrl} target="_blank" download>
+                        Download
+                      </a>
+                    </Button>
                   </div>
                 )}
               </div>
