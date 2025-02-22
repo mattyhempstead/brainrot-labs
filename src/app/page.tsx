@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowUp, ImageIcon, X, Square } from "lucide-react";
+import { ArrowUp, ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -10,6 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import ImageSelector from "./_components/ImageSelector";
+import Image from "next/image";
 
 const placeholders = [
   "Cristiano Ronaldo and Speed eat a cake",
@@ -84,8 +85,15 @@ export default function Page() {
                   key={index}
                   className="flex items-center gap-0 rounded-md bg-muted p-2"
                 >
-                  <Square className="h-5 w-5" />
-                  <button
+                  <div className="relative h-8 w-8">
+                    <Image
+                      src={image}
+                      alt={`Selected image ${index + 1}`}
+                      fill
+                      className="object-cover border border-black"
+                    />
+                  </div>
+                  <button 
                     type="button"
                     onClick={() => setSelectedImages(selectedImages.filter((_, i) => i !== index))}
                     className="ml-2 rounded-full hover:bg-muted-foreground/20"
