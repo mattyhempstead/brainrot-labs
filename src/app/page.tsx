@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { useState, useEffect } from "react"
 
-// Move placeholders outside component
 const placeholders = [
   "Cristiano Ronaldo and Speed eat a cake",
   "Taylor Swift and Sabrina hug and then fight each other",
