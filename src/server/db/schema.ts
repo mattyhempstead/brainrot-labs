@@ -23,4 +23,6 @@ export const brainrotJobTable = pgTable("brainrot_job", {
 
   falRequestId: text("fal_request_id").notNull(),
   status: text("status", { enum: ["in_progress", "completed", "failed"] }).notNull(),
+
+  videoUrl: text("video_url"),
 });

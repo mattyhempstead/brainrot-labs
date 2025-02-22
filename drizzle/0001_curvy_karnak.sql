@@ -1,0 +1,1 @@
+ALTER TABLE "brainrot_job" ADD COLUMN "video_url" text;

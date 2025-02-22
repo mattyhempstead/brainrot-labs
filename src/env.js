@@ -33,8 +33,12 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
     FAL_API_KEY: process.env.FAL_API_KEY,
+<<<<<<< HEAD
     DEPLOYMENT_URL: process.env.DEPLOYMENT_URL || process.env.VERCEL_URL || "http://localhost:3000",
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+=======
+    DEPLOYMENT_URL: process.env.DEPLOYMENT_URL || `https://${process.env.VERCEL_URL}`,
+>>>>>>> df22acb023e4e77fbf503e9d22b8c0856b3584f8
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
