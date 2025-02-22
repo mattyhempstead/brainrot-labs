@@ -15,8 +15,8 @@ import Marquee from "@/components/ui/marquee";
 
 const placeholders = [
   "Cristiano Ronaldo and Speed eat a cake",
-  "Taylor Swift and Sabrina hug and then fight each other",
   "Young-hee climbs up a tree and falls down",
+  "Taylor Swift and Sabrina hug and then fight each other",
 ];
 
 const images = [
@@ -27,8 +27,8 @@ const images = [
 
 const marqueeItems = [
   "Cristiano Ronaldo and Speed eat a cake",
-  "Taylor Swift and Sabrina hug and then fight each other",
   "Young-hee climbs up a tree and falls down",
+  "Taylor Swift and Sabrina hug and then fight each other",
 ];
 
 export default function Page() {
@@ -38,6 +38,15 @@ export default function Page() {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+
+  const handleMarqueeClick = (text: string, index: number) => {
+    console.log('Setting input to:', text);
+    setInputValue(text);
+    if (images[index]) {
+      setSelectedImages([images[index]]);
+    }
+  };
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -117,6 +126,8 @@ export default function Page() {
             className="ring-offset-background placeholder:text-muted-foreground flex w-full resize-none rounded-md border-0 bg-transparent px-2 py-2 text-[16px] leading-snug focus:bg-transparent focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
             rows={3}
             placeholder={currentPlaceholder}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
           />
           <div className="flex flex-wrap justify-between gap-1">
             <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
@@ -150,7 +161,12 @@ export default function Page() {
           </div>
         </form>
 
-        <Marquee items={marqueeItems} />
+        <Marquee 
+          items={marqueeItems} 
+          onItemClick={handleMarqueeClick}
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+        />
       </div>
     </div>
   );
