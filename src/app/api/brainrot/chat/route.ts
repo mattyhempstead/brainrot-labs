@@ -1,9 +1,10 @@
+import { api } from "@/trpc/server";
 import { openai } from "@ai-sdk/openai";
 import { streamText, tool } from "ai";
 import fs from "fs";
 import path from "path";
 import { z } from "zod";
-// Change runtime to nodejs
+
 export const runtime = "nodejs";
 
 export async function POST(req: Request): Promise<Response> {
@@ -51,18 +52,21 @@ export async function POST(req: Request): Promise<Response> {
           prompt: string;
           imageUrl: '/images/ronaldo.jpg' | '/images/squidgame.jpg' | '/images/taylor.jpg'
         }) => {
-
           const imageResponse = await fetch(`${process.env.DEPLOYMENT_URL}${imageUrl}`);
           const arrayBuffer = await imageResponse.arrayBuffer();
           const base64Url = `data:${imageResponse.headers.get('content-type')};base64,${Buffer.from(arrayBuffer).toString('base64')}`;
 
-          // todo: fal ai
-          console.log(imageUrl);
+          // Call the generateVideo mutation
+          const { jobId } = await api.brainrot.generateVideo({
+            prompt,
+            imageUrl: base64Url
+          });
 
           return {
-            base64Url: base64Url,
-            imageUrl: imageUrl,
-          }
+            base64Url,
+            imageUrl,
+            jobId
+          };
         },
       }),
     },

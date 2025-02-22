@@ -25,6 +25,12 @@ type MinimaxVideo01ImageToVideoInput = {
 const VIDEO_MODEL = "fal-ai/minimax/video-01/image-to-video";
 
 export const brainrotRouter = createTRPCRouter({
+  listJobs: publicProcedure
+    .query(async () => {
+      const jobs = await db.select().from(brainrotJobTable);
+      return jobs;
+    }),
+
   generateVideo: publicProcedure
     .input(z.object({
       prompt: z.string(),
