@@ -37,7 +37,7 @@ const placeholders = [
   "Taylor and Sabrina hug and then fight each other",
 ];
 
-const images = ["/images/1.jpg", "/images/2.jpg", "/images/3.jpg"];
+const images = ["/images/ronaldo.jpg", "/images/squidgame.jpg", "/images/taylor.jpg"];
 
 const marqueeItems = [
   "Ronaldo and Speed eat a cake",

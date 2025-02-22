@@ -35,7 +35,7 @@ interface VideoCard {
   views: number;
 }
 
-const images = ["/images/1.jpg", "/images/2.jpg", "/images/3.jpg"];
+const images = ["/images/ronaldo.jpg", "/images/squidgame.jpg", "/images/taylor.jpg"];
 
 const mockMessages: ChatMessage[] = [
   {
@@ -52,7 +52,7 @@ const mockMessages: ChatMessage[] = [
     id: '3',
     content: "I want to make some dance videos with cool effects",
     sender: 'user',
-    images: ['/images/1.jpg']
+    images: ['/images/ronaldo.jpg']
   },
   {
     id: '4',
@@ -84,21 +84,21 @@ const mockMessages: ChatMessage[] = [
 const mockVideos: VideoCard[] = [
   {
     id: 'v1',
-    thumbnail: '/images/1.jpg',
+    thumbnail: '/images/ronaldo.jpg',
     title: 'Dance Tutorial #1',
     duration: '0:30',
     views: 1200
   },
   {
     id: 'v2',
-    thumbnail: '/images/2.jpg',
+    thumbnail: '/images/squidgame.jpg',
     title: 'Effect Tutorial',
     duration: '0:45',
     views: 850
   },
   {
     id: 'v3',
-    thumbnail: '/images/3.jpg',
+    thumbnail: '/images/taylor.jpg',
     title: 'Trending Dance',
     duration: '0:60',
     views: 2300
@@ -118,50 +118,93 @@ export default function ChatPage() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [streamingContent, setStreamingContent] = useState("");
 
   // Add a ref to track initial mount
   const isInitialMount = useRef(true);
 
-  // Simulate assistant response
-  const sendAssistantResponse = () => {
-    const randomResponse = mockAssistantResponses[Math.floor(Math.random() * mockAssistantResponses.length)] || "How can I help you?";
-    const assistantMessage: ChatMessage = {
-      id: crypto.randomUUID(),
-      content: randomResponse,
-      sender: 'assistant' as const
-    };
-    addMessage(assistantMessage);
-  };
-
-  // Handle message submission
-  const handleSubmit = (e: React.FormEvent) => {
+  // Updated handleSubmit function
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
       content: inputValue,
-      sender: 'user' as const,
+      sender: 'user',
       images: selectedImages.length > 0 ? selectedImages : undefined
     };
     
     addMessage(userMessage);
     setInputValue("");
     setSelectedImages([]);
+    setIsLoading(true);
+
+    try {
+      
+      
+
+      const messageContent = selectedImages.length > 0 ? [
+        { type: 'text', text: inputValue + (selectedImages[0] ? "\n\nimageUrl:" + selectedImages[0] : "") },
+        // {
+        //   type: 'image',
+        //   image: selectedImages[0], // This should be a path relative to the public directory
+        // }
+      ] : inputValue;
+
+      const response = await fetch('/api/brainrot/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...messages, { role: 'user', content: messageContent }],
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch response');
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let streamContent = "";
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split("\n").filter(line => line.trim());
+          
+          for (const line of lines) {
+            if (line.startsWith("0:")) {
+              // Extract content after "0:"
+              const content = line.slice(2).trim();
+              try {
+                streamContent += JSON.parse(content);
+              } catch {
+                streamContent += content;
+              }
+              setStreamingContent(streamContent);
+            }
+            // Skip other message types (f:, e:, d:)
+          }
+        }
+
+        // Add final assistant message
+        const assistantMessage: ChatMessage = {
+          id: crypto.randomUUID(),
+          content: streamContent,
+          sender: 'assistant'
+        };
+        addMessage(assistantMessage);
+        setStreamingContent("");
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-  // Single handler for assistant responses
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.sender === 'user') {
-      setTimeout(sendAssistantResponse, 1000);
-    }
-  }, [messages]);
 
   return (
     <div className="flex h-screen">
@@ -199,6 +242,13 @@ export default function ChatPage() {
                   </div>
                 </div>
               ))}
+              {streamingContent && (
+                <div className="flex justify-start">
+                  <div className="bg-muted max-w-full p-3">
+                    <p>{streamingContent}</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -236,7 +286,7 @@ export default function ChatPage() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
-                  handleSubmit(e);
+                  void handleSubmit(e);
                 }
               }}
             />

@@ -13,6 +13,7 @@ export const env = createEnv({
       .default("development"),
     FAL_API_KEY: z.string(),
     DEPLOYMENT_URL: z.string().url(),
+    OPENAI_API_KEY: z.string(),
   },
 
   /**
@@ -33,6 +34,7 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     FAL_API_KEY: process.env.FAL_API_KEY,
     DEPLOYMENT_URL: process.env.DEPLOYMENT_URL || process.env.VERCEL_URL || "http://localhost:3000",
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

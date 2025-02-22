@@ -30,7 +30,7 @@ export default function Page() {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const response = await fetch('/images/1.jpg');
+    const response = await fetch('/images/ronaldo.jpg');
     const blob = await response.blob();
     const reader = new FileReader();
     const base64Url = await new Promise<string>((resolve) => {
