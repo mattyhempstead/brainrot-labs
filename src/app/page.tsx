@@ -92,7 +92,7 @@ export default function Page() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent
-                className="bg-[var(--bw)]"
+                className="bg-[var(--bw)] w-fit"
                 align="start"
                 side="top"
               >
