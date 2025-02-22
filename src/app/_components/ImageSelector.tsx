@@ -7,6 +7,7 @@ interface ImageSelectorProps {
   setUploadedImages: (images: string[]) => void;
   selectedImages: string[];
   setSelectedImages: (images: string[]) => void;
+  onImageSelect: () => void;
 }
 
 const images = [
@@ -19,7 +20,8 @@ export default function ImageSelector({
   uploadedImages, 
   setUploadedImages, 
   selectedImages, 
-  setSelectedImages 
+  setSelectedImages,
+  onImageSelect
 }: ImageSelectorProps) {
   const handleImageClick = (image: string) => {
     if (selectedImages.includes(image)) {
@@ -27,6 +29,7 @@ export default function ImageSelector({
     } else {
       setSelectedImages([...selectedImages, image]);
     }
+    onImageSelect();
   };
 
   return (
@@ -61,7 +64,8 @@ export default function ImageSelector({
             const file = e.target.files?.[0];
             if (file) {
               const imageUrl = URL.createObjectURL(file);
-              setUploadedImages([...uploadedImages, imageUrl]);
+              setSelectedImages([...selectedImages, imageUrl]);
+              onImageSelect();
             }
           }}
         />

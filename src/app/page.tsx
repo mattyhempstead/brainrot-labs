@@ -24,6 +24,7 @@ export default function Page() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -110,7 +111,7 @@ export default function Page() {
             placeholder={currentPlaceholder}
           />
           <div className="flex flex-wrap justify-between gap-1">
-            <Popover>
+            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="reverse"
@@ -130,6 +131,7 @@ export default function Page() {
                   setUploadedImages={setUploadedImages}
                   selectedImages={selectedImages}
                   setSelectedImages={setSelectedImages}
+                  onImageSelect={() => setIsPopoverOpen(false)}
                 />
               </PopoverContent>
             </Popover>
