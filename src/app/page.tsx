@@ -12,32 +12,54 @@ import {
 import ImageSelector from "./_components/ImageSelector";
 import Image from "next/image";
 import Marquee from "@/components/ui/marquee";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
 const placeholders = [
-  "Cristiano Ronaldo and Speed eat a cake",
-  "Taylor Swift and Sabrina hug and then fight each other",
+  "Ronaldo and Speed eat a cake",
   "Young-hee climbs up a tree and falls down",
+  "Taylor and Sabrina hug and then fight each other",
 ];
 
-const images = [
-  "/images/1.jpg",
-  "/images/2.jpg",
-  "/images/3.jpg",
-];
+const images = ["/images/1.jpg", "/images/2.jpg", "/images/3.jpg"];
 
 const marqueeItems = [
-  "Cristiano Ronaldo and Speed eat a cake",
-  "Taylor Swift and Sabrina hug and then fight each other",
+  "Ronaldo and Speed eat a cake",
   "Young-hee climbs up a tree and falls down",
+  "Taylor and Sabrina hug and then fight each other",
 ];
 
 export default function Page() {
+  const router = useRouter();
   const [currentPlaceholder, setCurrentPlaceholder] = useState("");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const uuid = crypto.randomUUID();
+    router.push(`/chat/${uuid}`);
+  };
+
+  const handleMarqueeClick = (text: string, index: number) => {
+    console.log("Setting input to:", text);
+    setInputValue(text);
+    if (images[index]) {
+      setSelectedImages([images[index]]);
+    }
+  };
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -91,7 +113,7 @@ export default function Page() {
       </p>
 
       <div className="w-full max-w-3xl">
-        <form className="duration-125 group flex flex-col gap-2 border-2 border-border bg-[var(--bw)] p-2 transition-colors">
+        <form onSubmit={handleSubmit} className="duration-125 group flex flex-col gap-2 border-2 border-border bg-[var(--bw)] p-2 transition-colors">
           {selectedImages.length > 0 && (
             <div className="flex flex-wrap gap-2 p-0">
               <div className="bg-muted flex items-center gap-0 rounded-md p-2">
@@ -117,40 +139,60 @@ export default function Page() {
             className="ring-offset-background placeholder:text-muted-foreground flex w-full resize-none rounded-md border-0 bg-transparent px-2 py-2 text-[16px] leading-snug focus:bg-transparent focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
             rows={3}
             placeholder={currentPlaceholder}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
           />
           <div className="flex flex-wrap justify-between gap-1">
-            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="reverse"
-                  size="icon"
-                  className="bg-[var(--bw)]"
+            <div className="flex flex-wrap gap-2">
+              <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="reverse"
+                    size="icon"
+                    className="bg-[var(--bw)]"
+                  >
+                    <ImageIcon className="h-6 w-6" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-fit bg-[var(--bw)]"
+                  align="start"
+                  side="top"
                 >
-                  <ImageIcon className="h-6 w-6" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                className="w-fit bg-[var(--bw)]"
-                align="start"
-                side="top"
-              >
-                <ImageSelector
-                  uploadedImages={uploadedImages}
-                  setUploadedImages={setUploadedImages}
-                  selectedImages={selectedImages}
-                  setSelectedImages={setSelectedImages}
-                  onImageSelect={() => setIsPopoverOpen(false)}
-                  defaultImages={images}
-                />
-              </PopoverContent>
-            </Popover>
-            <Button variant="reverse" size="icon">
+                  <ImageSelector
+                    uploadedImages={uploadedImages}
+                    setUploadedImages={setUploadedImages}
+                    selectedImages={selectedImages}
+                    setSelectedImages={setSelectedImages}
+                    onImageSelect={() => setIsPopoverOpen(false)}
+                    defaultImages={images}
+                  />
+                </PopoverContent>
+              </Popover>
+              <Select>
+                <SelectTrigger className="w-[150px] bg-bw">
+                  <SelectValue placeholder="Content Style" />
+                </SelectTrigger>
+                <SelectContent className="bg-bw" side="top">
+                  <SelectItem value="messy">💥 Messy</SelectItem>
+                  <SelectItem value="explosive">💣 Explosive</SelectItem>
+                  <SelectItem value="watery">💦 Watery</SelectItem>
+                  <SelectItem value="shiny">✨ Shiny</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button type="submit" variant="reverse" size="icon">
               <ArrowUp className="h-6 w-6" />
             </Button>
           </div>
         </form>
 
-        <Marquee items={marqueeItems} />
+        <Marquee
+          items={marqueeItems}
+          onItemClick={handleMarqueeClick}
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+        />
       </div>
     </div>
   );
