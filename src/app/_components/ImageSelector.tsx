@@ -1,19 +1,45 @@
 import React from "react";
 import Image from "next/image";
 import { Plus } from "lucide-react";
+
+interface ImageSelectorProps {
+  uploadedImages: string[];
+  setUploadedImages: (images: string[]) => void;
+  selectedImages: string[];
+  setSelectedImages: (images: string[]) => void;
+}
+
 const images = [
   "/images/1.jpg",
   "/images/2.jpg",
   "/images/3.jpg",
 ];
 
-export default function ImageSelector() {
+export default function ImageSelector({ 
+  uploadedImages, 
+  setUploadedImages, 
+  selectedImages, 
+  setSelectedImages 
+}: ImageSelectorProps) {
+  const handleImageClick = (image: string) => {
+    if (selectedImages.includes(image)) {
+      setSelectedImages(selectedImages.filter(img => img !== image));
+    } else {
+      setSelectedImages([...selectedImages, image]);
+    }
+  };
+
   return (
     <div className="flex gap-2 p-0">
-      {images.map((image, index) => (
+      {[...images, ...uploadedImages].map((image, index) => (
         <button
           key={index}
-          className="relative h-[160px] w-[90px] overflow-hidden rounded-md border border-border hover:border-foreground/50 transition-colors"
+          onClick={() => handleImageClick(image)}
+          className={`relative h-[160px] w-[90px] overflow-hidden rounded-md border transition-colors ${
+            selectedImages.includes(image)
+              ? "border-foreground"
+              : "border-border hover:border-foreground/50"
+          }`}
         >
           <Image
             src={image}
@@ -27,7 +53,18 @@ export default function ImageSelector() {
       <label
         className="relative h-[160px] w-[90px] flex items-center justify-center rounded-md border border-border hover:border-foreground/50 transition-colors cursor-pointer"
       >
-        <input type="file" className="hidden" accept="image/*" />
+        <input 
+          type="file" 
+          className="hidden" 
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              const imageUrl = URL.createObjectURL(file);
+              setUploadedImages([...uploadedImages, imageUrl]);
+            }
+          }}
+        />
         <Plus className="h-6 w-6" />
       </label>
     </div>

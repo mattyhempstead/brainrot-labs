@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowUp, ImageIcon } from "lucide-react";
+import { ArrowUp, ImageIcon, X, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -21,6 +21,8 @@ export default function Page() {
   const [currentPlaceholder, setCurrentPlaceholder] = useState("");
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -75,6 +77,25 @@ export default function Page() {
 
       <div className="w-full max-w-3xl">
         <form className="duration-125 group flex flex-col gap-2 border-2 border-border bg-[var(--bw)] p-2 transition-colors">
+          {selectedImages.length > 0 && (
+            <div className="flex flex-wrap gap-2 p-0">
+              {selectedImages.map((image, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-0 rounded-md bg-muted p-2"
+                >
+                  <Square className="h-5 w-5" />
+                  <button
+                    type="button"
+                    onClick={() => setSelectedImages(selectedImages.filter((_, i) => i !== index))}
+                    className="ml-2 rounded-full hover:bg-muted-foreground/20"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <Textarea
             className="ring-offset-background placeholder:text-muted-foreground flex w-full resize-none rounded-md border-0 bg-transparent px-2 py-2 text-[16px] leading-snug focus:bg-transparent focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
             rows={3}
@@ -96,7 +117,12 @@ export default function Page() {
                 align="start"
                 side="top"
               >
-                <ImageSelector />
+                <ImageSelector 
+                  uploadedImages={uploadedImages}
+                  setUploadedImages={setUploadedImages}
+                  selectedImages={selectedImages}
+                  setSelectedImages={setSelectedImages}
+                />
               </PopoverContent>
             </Popover>
             <Button variant="reverse" size="icon">
