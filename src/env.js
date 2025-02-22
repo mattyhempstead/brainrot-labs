@@ -12,7 +12,10 @@ export const env = createEnv({
       .enum(["development", "test", "production"])
       .default("development"),
     FAL_API_KEY: z.string(),
-    DEPLOYMENT_URL: z.string().url(),
+    DEPLOYMENT_URL: z.string().transform((val) => {
+      console.log("DEPLOYMENT_URL before validation:", val);
+      return val;
+    }),
   },
 
   /**
@@ -32,7 +35,8 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
     FAL_API_KEY: process.env.FAL_API_KEY,
-    DEPLOYMENT_URL: process.env.DEPLOYMENT_URL || process.env.VERCEL_URL || "http://localhost:3000",
+    // DEPLOYMENT_URL: process.env.DEPLOYMENT_URL || process.env.VERCEL_URL || "http://localhost:3000",
+    DEPLOYMENT_URL: "http://localhost:3000",
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
