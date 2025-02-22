@@ -1,7 +1,9 @@
+import { env } from "@/env";
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { db } from "@/server/db";
 import { brainrotJobTable } from "@/server/db/schema";
 import { fal } from "@fal-ai/client";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 type MinimaxVideo01ImageToVideoInput = {
@@ -32,6 +34,16 @@ export const brainrotRouter = createTRPCRouter({
         prompt_optimizer: true,
       };
 
+      console.log(params);
+
+      // return {
+      //   jobId: "test",
+      // }
+
+      fal.config({
+        credentials: env.FAL_API_KEY,
+      });
+
       const { request_id } = await fal.queue.submit("fal-ai/minimax/video-01/image-to-video", {
         input: params,
         webhookUrl: "https://optional.webhook.url/for/results",
@@ -48,9 +60,29 @@ export const brainrotRouter = createTRPCRouter({
 
       return { jobId: newJob.id };
     }),
-});
 
-// const status = await fal.queue.status("fal-ai/flux/dev", {
-//   requestId: "764cabcf-b745-4b3e-ae38-1200304cf45b",
-//   logs: true,
-// });
+  getJobStatus: publicProcedure
+    .input(z.object({
+      jobId: z.string().uuid()
+    }))
+    .mutation(async ({ input }) => {
+      const job = await db.query.brainrotJobTable.findFirst({
+        where: eq(brainrotJobTable.id, input.jobId)
+      });
+
+      if (!job) {
+        throw new Error("Job not found");
+      }
+
+      fal.config({
+        credentials: env.FAL_API_KEY,
+      });
+
+      const status = await fal.queue.status("fal-ai/minimax/video-01/image-to-video", {
+        requestId: job.falRequestId,
+        logs: true,
+      });
+
+      return status;
+    }),
+});
