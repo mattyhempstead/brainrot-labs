@@ -38,50 +38,6 @@ interface VideoCard {
 
 const images = ["/images/ronaldo.jpg", "/images/squidgame.jpg", "/images/taylor.jpg"];
 
-const mockMessages: ChatMessage[] = [
-  {
-    id: '1',
-    content: "Hey, can you help me create some viral contadawdawdent?",
-    sender: 'user'
-  },
-  {
-    id: '2',
-    content: "Of course! What kind of content are you looking to create?",
-    sender: 'assistant'
-  },
-  {
-    id: '3',
-    content: "I want to make some dance videos with cool effects",
-    sender: 'user',
-    images: ['/images/ronaldo.jpg']
-  },
-  {
-    id: '4',
-    content: "I can help with that! What style of dance are you interested in?",
-    sender: 'assistant'
-  },
-  {
-    id: '5',
-    content: "I'm thinking of doing some hip-hop with some cool transition effects",
-    sender: 'user'
-  },
-  {
-    id: '6',
-    content: "Great choice! I've got some trending effects that would work perfectly with hip-hop. Would you like to see some examples?",
-    sender: 'assistant'
-  },
-  {
-    id: '7',
-    content: "Yes, please show me!",
-    sender: 'user'
-  },
-  {
-    id: '8',
-    content: "Here are some popular effects you might like. The 'explosive' transition effect is trending right now!",
-    sender: 'assistant'
-  }
-];
-
 const mockVideos: VideoCard[] = [
   {
     id: 'v1',
@@ -106,12 +62,6 @@ const mockVideos: VideoCard[] = [
   },
 ];
 
-const mockAssistantResponses = [
-  "Of course! What kind of content are you looking to create?",
-  "That sounds interesting! Would you like to see some examples of similar content?",
-  "I can help with that! Here are some trending effects that might work well:",
-];
-
 export default function ChatPage() {
   const { messages, message, setMessage, addMessage } = useChat();
   const [isLoading, setIsLoading] = useState(false);
@@ -122,7 +72,6 @@ export default function ChatPage() {
 
   useEffect(() => {
     const handleInitialMessage = async () => {
-      // Only run on initial mount and reset the flag
       if (!isInitialMount.current) return;
       isInitialMount.current = false;
 
@@ -130,18 +79,18 @@ export default function ChatPage() {
       if (messages.length > 0 && lastMessage?.sender === 'user') {
         setIsLoading(true);
         try {
-          const messageContent = lastMessage.images?.length ? [
-            { 
-              type: 'text', 
-              text: lastMessage.content + (lastMessage.images[0] ? "\n\nimageUrl:" + lastMessage.images[0] : "") 
-            }
-          ] : lastMessage.content;
+          const messageContent = lastMessage.images?.length 
+            ? `${lastMessage.content}\n\nimageUrl:${lastMessage.images[0]}`
+            : lastMessage.content;
 
           const response = await fetch('/api/brainrot/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              messages: [...messages.slice(0, -1), { role: 'user', content: messageContent }],
+              messages: [...messages.slice(0, -1).map(msg => ({
+                role: msg.sender,
+                content: msg.content
+              })), { role: 'user', content: messageContent }],
             })
           });
 
@@ -168,6 +117,17 @@ export default function ChatPage() {
                     streamContent += content;
                   }
                   setStreamingContent(streamContent);
+                } else if (line.startsWith("9:")) {
+                  // Handle tool calls
+                  try {
+                    const toolCall = JSON.parse(line.slice(2));
+                    if (toolCall.toolName === "generateVideo") {
+                      streamContent += "\n\nStarting to generate your video... This may take a few moments.";
+                      setStreamingContent(streamContent);
+                    }
+                  } catch (error) {
+                    console.error('Error parsing tool call:', error);
+                  }
                 }
               }
             }
@@ -207,16 +167,20 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const messageContent = selectedImages.length > 0 ? [
-        { type: 'text', text: inputValue + (selectedImages[0] ? "\n\nimageUrl:" + selectedImages[0] : "") },
-      ] : inputValue;
+      // Convert chat messages to the format expected by the API
+      const apiMessages = messages.concat(userMessage).map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.sender === 'user' && msg.images?.length 
+          ? { type: 'text', text: msg.content + (msg.images[0] ? "\n\nimageUrl:" + msg.images[0] : "") }
+          : msg.content
+      }));
 
       const response = await fetch('/api/brainrot/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [...messages, { role: 'user', content: messageContent }],
-          systemMessage: "You are an AI assistant that helps users come up with viral content prompts and generate videos. After generating a video, always provide a message back to the user confirming the video has started generating",
+          messages: apiMessages,
+          systemMessage: "You are an AI assistant that helps users come up with viral content prompts and generate videos. If imageURL is provided, don't change the prompt, input exactly as is. After generating a video, always provide a message back to the user confirming the video has started generating",
         })
       });
 
@@ -236,7 +200,6 @@ export default function ChatPage() {
           
           for (const line of lines) {
             if (line.startsWith("0:")) {
-              // Extract content after "0:"
               const content = line.slice(2).trim();
               try {
                 streamContent += JSON.parse(content);
@@ -244,8 +207,18 @@ export default function ChatPage() {
                 streamContent += content;
               }
               setStreamingContent(streamContent);
+            } else if (line.startsWith("9:")) {
+              // Handle tool calls
+              try {
+                const toolCall = JSON.parse(line.slice(2));
+                if (toolCall.toolName === "generateVideo") {
+                  streamContent += "\n\nStarting to generate your video... This may take a few moments.";
+                  setStreamingContent(streamContent);
+                }
+              } catch (error) {
+                console.error('Error parsing tool call:', error);
+              }
             }
-            // Skip other message types (f:, e:, d:)
           }
         }
 
@@ -273,34 +246,42 @@ export default function ChatPage() {
         <div className="flex-1 overflow-y-auto">
           <div className="flex min-h-full flex-col justify-start">
             <div className="flex flex-col gap-4 p-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex justify-start`}
-                >
-                  <div
-                    className={`max-w-full p-3 ${
-                      message.sender === 'user'
-                        ? 'bg-white/50 border-border border-2 w-full'
-                        : 'bg-muted'
-                    }`}
-                  >
-                    {message.sender === 'user' && message.images && message.images.length > 0 && (
-                      <div className="mb-2">
-                        <div className="relative h-20 w-20">
-                          <Image
-                            src={message.images[0] || ""}
-                            alt="Message image"
-                            fill
-                            className="rounded-md object-cover"
-                          />
-                        </div>
-                      </div>
-                    )}
-                    <p>{message.content}</p>
+              {messages.length === 0 ? (
+                <div className="flex h-[calc(100vh-200px)] items-center justify-center text-muted-foreground p-4 text-center">
+                  <div className="max-w-xl text-3xl">
+                    Start a conversation by typing a message below. You can also add images to enhance your prompts!
                   </div>
                 </div>
-              ))}
+              ) : (
+                messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex justify-start`}
+                  >
+                    <div
+                      className={`max-w-full p-3 ${
+                        message.sender === 'user'
+                          ? 'bg-white/50 border-border border-2 w-full'
+                          : 'bg-muted'
+                      }`}
+                    >
+                      {message.sender === 'user' && message.images && message.images.length > 0 && (
+                        <div className="mb-2">
+                          <div className="relative h-20 w-20">
+                            <Image
+                              src={message.images[0] || ""}
+                              alt="Message image"
+                              fill
+                              className="rounded-md object-cover"
+                            />
+                          </div>
+                        </div>
+                      )}
+                      <p>{message.content}</p>
+                    </div>
+                  </div>
+                ))
+              )}
               {streamingContent && (
                 <div className="flex justify-start">
                   <div className="bg-muted max-w-full p-3">
@@ -330,9 +311,14 @@ const ChatInputArea = ({
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [selectedStyle, setSelectedStyle] = useState<string>("");
 
   const handleSubmit = (e: React.FormEvent) => {
-    onSubmit(e, inputValue, selectedImages);
+    console.log(selectedStyle);
+    const finalMessage = selectedStyle 
+      ? `${inputValue}. Very ${selectedStyle}.`
+      : inputValue;
+    onSubmit(e, finalMessage, selectedImages);
     setInputValue("");
     setSelectedImages([]);
   };
@@ -401,7 +387,7 @@ const ChatInputArea = ({
                 />
               </PopoverContent>
             </Popover>
-            <Select>
+            <Select onValueChange={setSelectedStyle}>
               <SelectTrigger className="w-[150px] bg-bw">
                 <SelectValue placeholder="Content Style" />
               </SelectTrigger>

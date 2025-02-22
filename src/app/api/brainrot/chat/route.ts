@@ -12,30 +12,33 @@ export async function POST(req: Request): Promise<Response> {
 
   // Process messages to handle image paths
   const processedMessages = messages.map((msg: any) => {
+    // If content is an array (multimodal message)
     if (Array.isArray(msg.content)) {
       return {
-        ...msg,
+        role: msg.role,
         content: msg.content.map((content: any) => {
-          if (content.type === 'image' && content.image) {
-            // Get the absolute path from the relative path
-            const absolutePath = path.join(process.cwd(), 'public', content.image);
+          if (content.type === 'image') {
             return {
-              type: 'image',
-              image: fs.readFileSync(absolutePath)
+              type: 'text',
+              text: `imageUrl:${content.image}`
             };
           }
           return content;
-        })
+        }).map((c: any) => c.text).join('\n\n') // Join all text contents
       };
     }
-    return msg;
+    // If content is a string or object
+    return {
+      role: msg.role,
+      content: typeof msg.content === 'object' ? msg.content.text : msg.content
+    };
   });
 
   const allMessages = systemMessage
     ? [{ role: "system", content: systemMessage }, ...processedMessages]
     : processedMessages;
 
-  const result = await streamText({
+  const result = streamText({
     model: openai(model),
     messages: allMessages,
     tools: {
